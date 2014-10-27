@@ -43,7 +43,7 @@ std::wstring InsertBootOption(
     if (!btop.Pack(buffer, bufferSize)) {
         return L"";
     }
-    qDebug()<<bootxxxx;
+    qDebug()<<"Set New Boot Option"<<bootxxxx;
     if (SetFirmwareEnvironmentVariable(bootxxxx,
                                        UEFI_GUID,
                                        buffer,
@@ -53,19 +53,23 @@ std::wstring InsertBootOption(
             qDebug()<<"Failed!! SetFirmwareEnvironmentVariable"<<endl;
     }
 
+    qDebug()<<"Insert New Boot Option"<<bootxxxx;
     btorder.Insert(bootIndex);
     delete buffer;
     return bootxxxx;
 }
 
 void RemoveBootOption(std::wstring bootxxxx){
+    Utils::RasiePrivileges();
+
     if (SetFirmwareEnvironmentVariable(bootxxxx.c_str(),
                                    UEFI_GUID,
                                    NULL,
                                    NULL) == TRUE) {
         qDebug()<<"Success!! SetFirmwareEnvironmentVariable"<<endl;
     } else {
-        qDebug()<<"Failed!! SetFirmwareEnvironmentVariable"<<endl;
+        qDebug()<<"Failed!! SetFirmwareEnvironmentVariable"<<GetLastError ()<<endl;
+        return;
     }
     BootOrder btorder;
     UINT16 index = 0;

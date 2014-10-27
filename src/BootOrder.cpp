@@ -22,14 +22,11 @@ const std::vector<UINT16>& BootOrder::GetOrders() {
 
     if (0 == orderLen)
     {
-        DWORD dwErr = GetLastError();
-        qDebug()<<"Failed, GetFirmwareEnvironmentVariable(), GetLastError return "<<dwErr<<endl;
+        qDebug()<<"Failed, GetFirmwareEnvironmentVariable(), GetLastError return "<<GetLastError();
         return m_Orders;
     }
-    qDebug()<<"Dump BootOrder variable, Len: "<<orderLen<<endl;
-
     for(UINT32 i = 0; i < orderLen/2; i++) {
-        qDebug()<<hex<<((UINT16*)buffer)[i]<<endl;
+        qDebug()<<"Dump BootOrder: "<<hex<<((UINT16*)buffer)[i];
         m_Orders.push_back(((UINT16*)buffer)[i]);
     }
     return m_Orders;
@@ -37,7 +34,7 @@ const std::vector<UINT16>& BootOrder::GetOrders() {
 
 bool BootOrder::Insert(UINT16 bootIndex){
     this->GetOrders();
-    for (auto item: m_Orders){
+    foreach (UINT16 item, m_Orders){
         if (bootIndex == item){
             return true;
         }
@@ -54,30 +51,27 @@ bool BootOrder::Remove(UINT16 bootIndex){
 
 UINT16 BootOrder::NewIndex(){
     this->GetOrders();
-    size_t searchRange = m_Orders.size();
-    qDebug()<<"Order Length"<<searchRange;
-    vector<bool> orders = {false};
-    for (auto item: m_Orders){
-        if (item < searchRange) {
-            orders[item] = true;
+    UINT16 newIndex = 32;
+    while(true){
+        bool dumpIndex = false;
+        for(size_t i=0; i < m_Orders.size(); i++) {
+            if (newIndex == m_Orders[i]) {
+                dumpIndex = true;
+            }
         }
-    }
-
-    UINT16 i = 0;
-    for(i = 0; i < searchRange; ++i) {
-        if (!orders[i]) {
-            return i;
+        if (!dumpIndex)  {
+            qDebug()<<"Find NewIndex"<<newIndex;
+            return newIndex;
         }
+        ++newIndex;
     }
-    qDebug()<<"New Order "<<i;
-    return i;
 }
 
 bool BootOrder::SetOrders() {
     const size_t bufSize = 4096;
     UINT8 buffer[bufSize];
     size_t index = 0;
-    for (auto item: m_Orders){
+    foreach (UINT16 item, m_Orders){
         ((IndexValue*)buffer)[index] = item;
         index++;
     }
@@ -86,7 +80,7 @@ bool BootOrder::SetOrders() {
                                        UEFI_GUID,
                                        buffer,
                                        DWORD(m_Orders.size()*sizeof(IndexValue)/sizeof(UINT8))) == TRUE) {
-            qDebug()<<"Failed!! SetFirmwareEnvironmentVariable";
+            qDebug()<<"Failed!! SetFirmwareEnvironmentVariable"<<GetLastError ();
             return false;
     }
     qDebug()<<"Success!! SetFirmwareEnvironmentVariable";

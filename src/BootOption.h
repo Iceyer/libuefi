@@ -1,7 +1,9 @@
 #pragma once
 
-#include <Windows.h>
 #include <vector>
+#include <string>
+
+#include <Windows.h>
 
 #pragma pack(1)
 

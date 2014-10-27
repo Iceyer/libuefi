@@ -23,7 +23,7 @@ BootOption::BootOption(const std::wstring target,
     Header.FilePathListLength =
             sizeof(DevicePath)
             + sizeof(ImagePath)
-            + UINT16(m_ImagePath.length()) * 2 + 4;
+            + UINT16(m_ImagePath.length()+1) * 2 + 4;
 
     DevicePath.Header.Type = 4;
     DevicePath.Header.SubType = 1;
@@ -39,7 +39,7 @@ BootOption::BootOption(const std::wstring target,
 
     ImagePath.Header.Type = 4;
     ImagePath.Header.SubType = 4;
-    ImagePath.Header.Length = 4 + UINT16(m_ImagePath.length()*2);
+    ImagePath.Header.Length = 4 + UINT16(m_ImagePath.length()+1)*2;
 
     Butt.Type = 0x7F;
     Butt.SubType = 0xFF;
@@ -51,7 +51,7 @@ size_t BootOption::Size(){
             + m_Description.length()*2 + 2
             + sizeof(DevicePath)
             + sizeof(ImagePath)
-            + m_ImagePath.length()*2
+            + (m_ImagePath.length()+1)*2
             + 4;
 }
 
@@ -63,18 +63,20 @@ bool BootOption::Pack(unsigned char *buffer, size_t /*bufferLen*/) {
     ((UINT16 *)buffer)[0] = Header.FilePathListLength;
     qDebug()<<"Header.FilePathListLength"<<Header.FilePathListLength;
     buffer += 2;
+
     //Description
     size_t descriptionSize = m_Description.length()*2;
     qDebug()<<m_Description.c_str()
             <<"descriptionSize"
             <<descriptionSize;
-    for (int i =0; i < descriptionSize/2; ++i) {
+    for (size_t i =0; i < descriptionSize/2; ++i) {
         *((wchar_t*)buffer+i) = m_Description[i];
     }
-    //memcpy_s(buffer, descriptionSize, m_Description.c_str(), descriptionSize);
+
     buffer += descriptionSize;
     *(wchar_t*)buffer = 0;
     buffer += 2;
+
     //DevicePath
     memcpy_s(buffer, DevicePath.Header.Length,
              &DevicePath, DevicePath.Header.Length);
@@ -83,14 +85,17 @@ bool BootOption::Pack(unsigned char *buffer, size_t /*bufferLen*/) {
     memcpy_s(buffer, 4, &ImagePath, 4);
     buffer += 4;
     size_t imagepathSize = m_ImagePath.length()*2;
-     qDebug()<<"imagepathSize"<<imagepathSize;
-     for (int i =0; i < imagepathSize/2; ++i) {
-         *((wchar_t*)buffer+i) = m_ImagePath[i];
-     }
+    qDebug()<<"imagepathSize"<<imagepathSize;
+    for (size_t i =0; i < imagepathSize/2; ++i) {
+     *((wchar_t*)buffer+i) = m_ImagePath[i];
+    }
+    buffer += imagepathSize;
+    *(wchar_t*)buffer = 0;
+    buffer += 2;
+
     qDebug()<<(m_ImagePath.c_str())
             <<"imagepathSize"
             <<imagepathSize;
-    buffer += imagepathSize;
     memcpy_s(buffer, 4, &Butt, 4);
     return true;
 }
