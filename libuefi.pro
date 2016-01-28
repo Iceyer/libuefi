@@ -36,14 +36,6 @@ CONFIG(debug, debug|release) {
     win32: TARGET = $$join(TARGET,,,d)
 }
 
-
-win32-msvc* {
-    DEFINES += _USING_V110_SDK71_
-    QMAKE_LFLAGS += /MANIFESTUAC:"level='requireAdministrator'uiAccess='false'"
-    QMAKE_LFLAGS += /SUBSYSTEM:WINDOWS",5.1"
-}
-
-
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../xsys/ -lxsys
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../xsys/ -lxsysd
 else:unix: LIBS += -L$$OUT_PWD/../xsys/ -lxsys
