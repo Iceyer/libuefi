@@ -8,12 +8,12 @@ namespace UEFI {
 
 class BootOrder {
 public:
+    const std::vector<UINT16>& GetOrders();
     bool Insert(UINT16 bootIndex);
     bool Remove(UINT16 bootIndex);
     UINT16 NewIndex();
 
 private:
-    const std::vector<UINT16>& GetOrders();
     bool SetOrders();
 
     typedef UINT16 IndexValue;
